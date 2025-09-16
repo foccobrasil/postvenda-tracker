@@ -3,11 +3,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Edit, LogOut } from 'lucide-react';
+import { Search, Edit, LogOut, Calendar as CalendarIcon, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { format, differenceInDays } from 'date-fns';
+import { format, differenceInDays, isAfter, isBefore, isSameDay } from 'date-fns';
+import { cn } from '@/lib/utils';
 import PedidoEditModal from '@/components/PedidoEditModal';
 
 interface Pedido {
@@ -30,6 +33,8 @@ const Index = () => {
   const [filteredPedidos, setFilteredPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
   const [selectedPedido, setSelectedPedido] = useState<Pedido | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -40,18 +45,40 @@ const Index = () => {
   }, [user, authLoading]);
 
   useEffect(() => {
-    if (!search) {
-      setFilteredPedidos(pedidos);
-    } else {
-      const filtered = pedidos.filter(
+    let filtered = pedidos;
+
+    // Text search filter
+    if (search) {
+      filtered = filtered.filter(
         (pedido) =>
           pedido.pedido_interno?.toString().includes(search) ||
           pedido.pedido_externo?.toLowerCase().includes(search.toLowerCase()) ||
           pedido.cliente_fantasia?.toLowerCase().includes(search.toLowerCase())
       );
-      setFilteredPedidos(filtered);
     }
-  }, [search, pedidos]);
+
+    // Date range filter
+    if (dateFrom || dateTo) {
+      filtered = filtered.filter((pedido) => {
+        if (!pedido.data_interna) return false;
+        
+        const pedidoDate = new Date(pedido.data_interna);
+        
+        if (dateFrom && dateTo) {
+          return (isAfter(pedidoDate, dateFrom) || isSameDay(pedidoDate, dateFrom)) &&
+                 (isBefore(pedidoDate, dateTo) || isSameDay(pedidoDate, dateTo));
+        } else if (dateFrom) {
+          return isAfter(pedidoDate, dateFrom) || isSameDay(pedidoDate, dateFrom);
+        } else if (dateTo) {
+          return isBefore(pedidoDate, dateTo) || isSameDay(pedidoDate, dateTo);
+        }
+        
+        return true;
+      });
+    }
+
+    setFilteredPedidos(filtered);
+  }, [search, dateFrom, dateTo, pedidos]);
 
   const fetchPedidos = async () => {
     setLoading(true);
@@ -129,18 +156,98 @@ const Index = () => {
           </Button>
         </div>
 
-        {/* Search */}
+        {/* Search and Filters */}
         <Card>
           <CardContent className="pt-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por pedido interno, externo ou cliente..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Text Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por pedido interno, externo ou cliente..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              {/* Date From */}
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium">Data de:</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "justify-start text-left font-normal",
+                        !dateFrom && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateFrom ? format(dateFrom, 'dd/MM/yyyy') : 'Selecionar data'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateFrom}
+                      onSelect={setDateFrom}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              {/* Date To */}
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium">Data até:</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "justify-start text-left font-normal",
+                        !dateTo && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateTo ? format(dateTo, 'dd/MM/yyyy') : 'Selecionar data'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateTo}
+                      onSelect={setDateTo}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
+            
+            {/* Clear Filters */}
+            {(search || dateFrom || dateTo) && (
+              <div className="mt-4 flex gap-2">
+                {search && (
+                  <Button variant="outline" size="sm" onClick={() => setSearch('')}>
+                    <X className="mr-1 h-3 w-3" />
+                    Limpar busca
+                  </Button>
+                )}
+                {(dateFrom || dateTo) && (
+                  <Button variant="outline" size="sm" onClick={() => {
+                    setDateFrom(undefined);
+                    setDateTo(undefined);
+                  }}>
+                    <X className="mr-1 h-3 w-3" />
+                    Limpar datas
+                  </Button>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 
