@@ -31,7 +31,7 @@ const Auth = () => {
         title: 'Login realizado com sucesso',
         description: 'Bem-vindo ao sistema!',
       });
-      navigate('/');
+      navigate('/dashboard');
     }
     setLoading(false);
   };

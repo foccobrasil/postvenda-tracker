@@ -108,17 +108,8 @@ const Index = () => {
   if (authLoading) return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
   
   if (!user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold">Controle de Pós-Venda</h1>
-          <p className="text-xl text-muted-foreground">Sistema interno para gerenciamento de pedidos</p>
-          <Button onClick={() => window.location.href = '/auth'}>
-            Fazer Login
-          </Button>
-        </div>
-      </div>
-    );
+    window.location.href = '/';
+    return null;
   }
 
   return (
