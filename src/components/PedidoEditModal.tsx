@@ -4,8 +4,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { RotateCcw, X } from 'lucide-react';
@@ -31,7 +42,12 @@ interface PedidoEditModalProps {
   onUpdate: (updatedPedido: Pedido) => void;
 }
 
-const PedidoEditModal = ({ pedido, open, onClose, onUpdate }: PedidoEditModalProps) => {
+const PedidoEditModal = ({
+  pedido,
+  open,
+  onClose,
+  onUpdate,
+}: PedidoEditModalProps) => {
   const { profile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<Pedido>>({});
@@ -91,7 +107,7 @@ const PedidoEditModal = ({ pedido, open, onClose, onUpdate }: PedidoEditModalPro
         title: 'Pedido atualizado',
         description: 'As alterações foram salvas com sucesso.',
       });
-      
+
       onClose();
     } catch (error: any) {
       toast({
@@ -133,7 +149,8 @@ const PedidoEditModal = ({ pedido, open, onClose, onUpdate }: PedidoEditModalPro
   const envioInForm = formData.dt_envio_cliente;
 
   const envioDisabled = !canEdit || (!isAdmin && !faturamentoInForm);
-  const rastreioDisabled = !canEdit || (!isAdmin && (!faturamentoInForm || !envioInForm));
+  const rastreioDisabled =
+    !canEdit || (!isAdmin && (!faturamentoInForm || !envioInForm));
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -141,54 +158,70 @@ const PedidoEditModal = ({ pedido, open, onClose, onUpdate }: PedidoEditModalPro
         <DialogHeader>
           <DialogTitle>Detalhes do Pedido</DialogTitle>
           <DialogDescription>
-            Pedido Interno: {pedido.pedido_interno} | Pedido Externo: {pedido.pedido_externo}
+            Pedido Interno: {pedido.pedido_interno} | Pedido Externo:{' '}
+            {pedido.pedido_externo}
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4 pt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
             {/* Row 1 */}
             <div>
-                <Label>Cliente</Label>
-                <Input value={pedido.cliente_fantasia || ''} disabled />
+              <Label>Cliente</Label>
+              <Input value={pedido.cliente_fantasia || ''} disabled />
             </div>
             <div>
-                <Label>Vendedor</Label>
-                <Input value={pedido.vendedor_nome || ''} disabled />
+              <Label>Vendedor</Label>
+              <Input value={pedido.vendedor_nome || ''} disabled />
             </div>
 
             {/* Row 2 */}
             <div>
-                <Label>Data Ped Externo</Label>
-                <Input type="date" value={formatDateForInput(pedido.data_externa)} disabled />
+              <Label>Data Ped Externo</Label>
+              <Input
+                type="date"
+                value={formatDateForInput(pedido.data_externa)}
+                disabled
+              />
             </div>
             <div>
-                <Label>Data Ped Interno</Label>
-                <Input type="date" value={formatDateForInput(pedido.data_interna)} disabled />
+              <Label>Data Ped Interno</Label>
+              <Input
+                type="date"
+                value={formatDateForInput(pedido.data_interna)}
+                disabled
+              />
             </div>
 
             {/* Row 3 - Editable Fields */}
             <div>
-                <Label>Data do Faturamento</Label>
-                <div className="relative flex items-center">
-                  <Input 
-                    type="date" 
-                    value={formatDateForInput(formData.data_faturamento)}
-                    onChange={(e) => setFormData({ ...formData, data_faturamento: e.target.value || null })}
-                    disabled={!canEdit}
-                    className="pr-10"
-                  />
-                  {formData.data_faturamento && canEdit && (
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="absolute right-1 h-7 w-7"
-                      onClick={() => setFormData({ ...formData, data_faturamento: null })}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+              <Label>Data do Faturamento</Label>
+              <div className="relative flex items-center">
+                <Input
+                  type="date"
+                  value={formatDateForInput(formData.data_faturamento)}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      data_faturamento: e.target.value || null,
+                    })
+                  }
+                  disabled={!canEdit}
+                  className="pr-10"
+                />
+                {formData.data_faturamento && canEdit && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 h-7 w-7"
+                    onClick={() =>
+                      setFormData({ ...formData, data_faturamento: null })
+                    }
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <div>
               <Label>Data Envio</Label>
@@ -199,25 +232,39 @@ const PedidoEditModal = ({ pedido, open, onClose, onUpdate }: PedidoEditModalPro
                       <Input
                         type="date"
                         value={formatDateForInput(formData.dt_envio_cliente)}
-                        onChange={(e) => setFormData({ ...formData, dt_envio_cliente: e.target.value || null })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            dt_envio_cliente: e.target.value || null,
+                          })
+                        }
                         disabled={envioDisabled}
                         className="pr-10"
                       />
-                      {formData.dt_envio_cliente && canEdit && !envioDisabled && (
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="absolute right-1 h-7 w-7"
-                          onClick={() => setFormData({ ...formData, dt_envio_cliente: null })}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
+                      {formData.dt_envio_cliente &&
+                        canEdit &&
+                        !envioDisabled && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-1 h-7 w-7"
+                            onClick={() =>
+                              setFormData({
+                                ...formData,
+                                dt_envio_cliente: null,
+                              })
+                            }
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
                     </div>
                   </TooltipTrigger>
                   {envioDisabled && canEdit && !isAdmin && (
                     <TooltipContent>
-                      <p>É necessário preencher a Data do Faturamento primeiro.</p>
+                      <p>
+                        É necessário preencher a Data do Faturamento primeiro.
+                      </p>
                     </TooltipContent>
                   )}
                 </Tooltip>
@@ -233,26 +280,38 @@ const PedidoEditModal = ({ pedido, open, onClose, onUpdate }: PedidoEditModalPro
                     <div className="relative flex items-center w-full">
                       <Input
                         value={formData.codigo_rastreio || ''}
-                        onChange={(e) => setFormData({ ...formData, codigo_rastreio: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            codigo_rastreio: e.target.value,
+                          })
+                        }
                         disabled={rastreioDisabled}
                         placeholder="Digite o código de rastreio"
                         className="font-mono pr-10"
                       />
-                      {formData.codigo_rastreio && canEdit && !rastreioDisabled && (
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="absolute right-1 h-7 w-7"
-                          onClick={() => setFormData({ ...formData, codigo_rastreio: '' })}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
+                      {formData.codigo_rastreio &&
+                        canEdit &&
+                        !rastreioDisabled && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-1 h-7 w-7"
+                            onClick={() =>
+                              setFormData({ ...formData, codigo_rastreio: '' })
+                            }
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
                     </div>
                   </TooltipTrigger>
                   {rastreioDisabled && canEdit && !isAdmin && (
                     <TooltipContent>
-                        <p>É necessário preencher a Data do Faturamento e a Data de Envio.</p>
+                      <p>
+                        É necessário preencher a Data do Faturamento e a Data de
+                        Envio.
+                      </p>
                     </TooltipContent>
                   )}
                 </Tooltip>

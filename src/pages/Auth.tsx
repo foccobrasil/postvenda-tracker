@@ -4,7 +4,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 
 const Auth = () => {
@@ -40,11 +46,15 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <img src="/logo.png" alt="Logo Focco Brasil" className="w-48 mx-auto mb-4" />
-          <CardTitle className="text-2xl font-bold">Controle de Pós-Venda</CardTitle>
-          <CardDescription>
-            Faça login para acessar o sistema
-          </CardDescription>
+          <img
+            src="/logo.png"
+            alt="Logo Focco Brasil"
+            className="w-48 mx-auto mb-4"
+          />
+          <CardTitle className="text-2xl font-bold">
+            Controle de Pós-Venda
+          </CardTitle>
+          <CardDescription>Faça login para acessar o sistema</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignIn} className="space-y-4">
