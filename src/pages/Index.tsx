@@ -89,9 +89,6 @@ const Index = () => {
   const [selectedOrders, setSelectedOrders] = useState<
     Record<string, Set<string>>
   >({});
-  const [bulkFaturamentoDate, setBulkFaturamentoDate] = useState<
-    Record<string, Date | undefined>
-  >({});
   const [bulkShipDate, setBulkShipDate] = useState<
     Record<string, Date | undefined>
   >({});
@@ -301,11 +298,10 @@ const Index = () => {
       return;
     }
 
-    const faturamentoDate = bulkFaturamentoDate[clientName];
     const shipDate = bulkShipDate[clientName];
     const track = bulkTrackingCode[clientName];
 
-    if (!faturamentoDate && !shipDate && !track) {
+    if (!shipDate && !track) {
       toast({
         title: 'Nenhum dado para salvar',
         description: 'Preencha ao menos um campo para o lote.',
@@ -315,8 +311,6 @@ const Index = () => {
     }
 
     const updateData: Partial<Pedido> = {};
-    if (faturamentoDate)
-      updateData.data_faturamento = format(faturamentoDate, 'yyyy-MM-dd');
     if (shipDate) updateData.dt_envio_cliente = format(shipDate, 'yyyy-MM-dd');
     if (track) updateData.codigo_rastreio = track;
 
@@ -344,7 +338,6 @@ const Index = () => {
       setPedidos(newPedidos);
 
       setSelectedOrders((prev) => ({ ...prev, [clientName]: new Set() }));
-      setBulkFaturamentoDate((prev) => ({ ...prev, [clientName]: undefined }));
       setBulkShipDate((prev) => ({ ...prev, [clientName]: undefined }));
       setBulkTrackingCode((prev) => ({ ...prev, [clientName]: '' }));
     } catch (error: any) {
@@ -476,12 +469,10 @@ const Index = () => {
                 {processedPedidos.map((group) => {
                   const selectedIds =
                     selectedOrders[group.clientName] || new Set();
-                  const faturamentoInBulk =
-                    bulkFaturamentoDate[group.clientName];
                   const envioInBulk = bulkShipDate[group.clientName];
-                  const bulkEnvioDisabled = !faturamentoInBulk;
+                  const bulkEnvioDisabled = selectedIds.size === 0;
                   const bulkRastreioDisabled =
-                    !faturamentoInBulk || !envioInBulk;
+                    selectedIds.size === 0 || !envioInBulk;
 
                   return (
                     <AccordionItem
@@ -534,39 +525,6 @@ const Index = () => {
                                 Selecionar Todos
                               </label>
                             </div>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className="w-[200px] justify-start text-left font-normal"
-                                >
-                                  <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {bulkFaturamentoDate[group.clientName] ? (
-                                    format(
-                                      bulkFaturamentoDate[group.clientName]!,
-                                      'dd/MM/yyyy'
-                                    )
-                                  ) : (
-                                    <span>Data Faturamento</span>
-                                  )}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0">
-                                <Calendar
-                                  mode="single"
-                                  selected={
-                                    bulkFaturamentoDate[group.clientName]
-                                  }
-                                  onSelect={(date) =>
-                                    setBulkFaturamentoDate((prev) => ({
-                                      ...prev,
-                                      [group.clientName]: date,
-                                    }))
-                                  }
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
                             <TooltipProvider>
                               <Tooltip delayDuration={100}>
                                 <TooltipTrigger asChild>
@@ -613,10 +571,7 @@ const Index = () => {
                                 </TooltipTrigger>
                                 {bulkEnvioDisabled && (
                                   <TooltipContent>
-                                    <p>
-                                      É necessário preencher a Data de
-                                      Faturamento em lote primeiro.
-                                    </p>
+                                    <p>Selecione ao menos um pedido.</p>
                                   </TooltipContent>
                                 )}
                               </Tooltip>
@@ -644,8 +599,8 @@ const Index = () => {
                                 {bulkRastreioDisabled && (
                                   <TooltipContent>
                                     <p>
-                                      É necessário preencher a Data de
-                                      Faturamento e a Data de Envio em lote.
+                                      Selecione os pedidos e preencha a Data de
+                                      Envio.
                                     </p>
                                   </TooltipContent>
                                 )}
@@ -663,9 +618,9 @@ const Index = () => {
                               <TableRow>
                                 <TableHead className="w-[50px]"></TableHead>
                                 <TableHead>Pedido Interno</TableHead>
-                                <TableHead>Data Faturamento</TableHead>
                                 <TableHead>Data Interna</TableHead>
                                 <TableHead>Dias Aguardando</TableHead>
+                                <TableHead>Data Faturamento</TableHead>
                                 <TableHead>Cód. Rastreio</TableHead>
                                 <TableHead className="text-right">
                                   Ações
@@ -698,9 +653,6 @@ const Index = () => {
                                       {pedido.pedido_interno}
                                     </TableCell>
                                     <TableCell>
-                                      {formatDate(pedido.data_faturamento)}
-                                    </TableCell>
-                                    <TableCell>
                                       {formatDate(pedido.data_interna)}
                                     </TableCell>
                                     <TableCell
@@ -709,6 +661,9 @@ const Index = () => {
                                       )}
                                     >
                                       {diasAguardando}
+                                    </TableCell>
+                                    <TableCell>
+                                      {formatDate(pedido.data_faturamento)}
                                     </TableCell>
                                     <TableCell>
                                       {pedido.codigo_rastreio || '-'}

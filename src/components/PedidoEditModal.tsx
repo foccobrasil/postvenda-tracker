@@ -55,7 +55,6 @@ const PedidoEditModal = ({
   useEffect(() => {
     if (pedido) {
       setFormData({
-        data_faturamento: pedido.data_faturamento,
         dt_envio_cliente: pedido.dt_envio_cliente,
         codigo_rastreio: pedido.codigo_rastreio,
       });
@@ -70,9 +69,6 @@ const PedidoEditModal = ({
 
     const updateData: Partial<Pedido> = {};
 
-    if (formData.data_faturamento !== pedido.data_faturamento) {
-      updateData.data_faturamento = formData.data_faturamento;
-    }
     if (formData.dt_envio_cliente !== pedido.dt_envio_cliente) {
       updateData.dt_envio_cliente = formData.dt_envio_cliente;
     }
@@ -123,7 +119,6 @@ const PedidoEditModal = ({
   const handleReset = () => {
     if (pedido) {
       setFormData({
-        data_faturamento: pedido.data_faturamento,
         dt_envio_cliente: pedido.dt_envio_cliente,
         codigo_rastreio: pedido.codigo_rastreio,
       });
@@ -145,12 +140,11 @@ const PedidoEditModal = ({
 
   if (!pedido) return null;
 
-  const faturamentoInForm = formData.data_faturamento;
   const envioInForm = formData.dt_envio_cliente;
 
-  const envioDisabled = !canEdit || (!isAdmin && !faturamentoInForm);
+  const envioDisabled = !canEdit || (!isAdmin && !pedido.data_faturamento);
   const rastreioDisabled =
-    !canEdit || (!isAdmin && (!faturamentoInForm || !envioInForm));
+    !canEdit || (!isAdmin && (!pedido.data_faturamento || !envioInForm));
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -196,32 +190,11 @@ const PedidoEditModal = ({
             {/* Row 3 - Editable Fields */}
             <div>
               <Label>Data do Faturamento</Label>
-              <div className="relative flex items-center">
-                <Input
-                  type="date"
-                  value={formatDateForInput(formData.data_faturamento)}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      data_faturamento: e.target.value || null,
-                    })
-                  }
-                  disabled={!canEdit}
-                  className="pr-10"
-                />
-                {formData.data_faturamento && canEdit && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-1 h-7 w-7"
-                    onClick={() =>
-                      setFormData({ ...formData, data_faturamento: null })
-                    }
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
+              <Input
+                type="date"
+                value={formatDateForInput(pedido.data_faturamento)}
+                disabled
+              />
             </div>
             <div>
               <Label>Data Envio</Label>
@@ -262,9 +235,7 @@ const PedidoEditModal = ({
                   </TooltipTrigger>
                   {envioDisabled && canEdit && !isAdmin && (
                     <TooltipContent>
-                      <p>
-                        É necessário preencher a Data do Faturamento primeiro.
-                      </p>
+                      <p>É necessário que o pedido tenha Data de Faturamento.</p>
                     </TooltipContent>
                   )}
                 </Tooltip>
@@ -309,8 +280,7 @@ const PedidoEditModal = ({
                   {rastreioDisabled && canEdit && !isAdmin && (
                     <TooltipContent>
                       <p>
-                        É necessário preencher a Data do Faturamento e a Data de
-                        Envio.
+                        É necessário Data de Faturamento e Data de Envio.
                       </p>
                     </TooltipContent>
                   )}
