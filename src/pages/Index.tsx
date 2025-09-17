@@ -286,7 +286,6 @@ const Index = () => {
           </div>
           <Button variant="outline" onClick={handleSignOut}><LogOut className="w-4 h-4 mr-2" />Sair</Button>
         </div>
-
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-wrap items-end gap-4">
